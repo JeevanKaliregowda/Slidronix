@@ -1,0 +1,19 @@
+LANDSLIDE BASELINE ML MODEL RESULTS
+==================================================
+
+Accuracy: 69.60%
+
+              precision    recall  f1-score   support
+
+   Composite       0.21      0.76      0.32        25
+       Creep       0.10      0.45      0.16        11
+        Fall       0.24      0.74      0.36       309
+        Flow       0.31      0.80      0.45       284
+       Slide       0.97      0.69      0.81      6023
+       Slump       0.14      0.71      0.24        14
+  Subsidence       0.13      0.61      0.22       114
+      Topple       0.04      0.19      0.06        16
+
+    accuracy                           0.70      6796
+   macro avg       0.27      0.62      0.33      6796
+weighted avg       0.89      0.70      0.76      6796
