@@ -1,0 +1,23 @@
+SLIDRONIX PHASE H - GIS RISK MAP SUMMARY
+============================================================
+
+Prediction samples: 2761
+Minimum probability: 0.000082
+Maximum probability: 0.997845
+Mean probability: 0.497367
+
+Risk Distribution
+------------------------------
+Low: 1083 (39.22%)
+Moderate: 490 (17.75%)
+High: 1188 (43.03%)
+
+Risk Classification Thresholds
+------------------------------
+Low      : probability < 0.33
+Moderate : 0.33 <= probability < 0.66
+High     : probability >= 0.66
+
+Important limitation
+------------------------------
+The current rainfall sequence is a fixed January 1-30, 2022 reference period. The map therefore represents model predictions under the current reference-period inputs, not a validated real-time operational warning map.

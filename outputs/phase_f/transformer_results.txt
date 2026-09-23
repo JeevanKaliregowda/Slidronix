@@ -1,0 +1,23 @@
+SLIDRONIX PHASE F - RAINFALL TRANSFORMER
+==========================================
+
+Device: cpu
+Training samples: 8385
+Validation samples: 2797
+Test samples: 2800
+Sequence length: 30 days
+Input features per timestep: 1
+Best validation epoch: 12
+Best validation ROC-AUC: 0.7311
+
+TEST RESULTS
+------------
+Accuracy : 0.6854
+Precision: 0.7144
+Recall   : 0.6169
+F1       : 0.6621
+ROC-AUC  : 0.7322
+
+Confusion Matrix:
+[[1056  345]
+ [ 536  863]]

@@ -1,0 +1,24 @@
+SLIDRONIX PHASE F - MULTIMODAL FUSION MODEL
+==========================================
+
+Device: cpu
+Training samples: 8224
+Validation samples: 2726
+Test samples: 2761
+Tabular features: 26
+CNN input: 2 x 32 x 32
+Rainfall input: 30 x 1
+Best validation epoch: 7
+Best validation ROC-AUC: 0.9140
+
+TEST RESULTS
+------------
+Accuracy : 0.8218
+Precision: 0.8033
+Recall   : 0.8543
+F1       : 0.8280
+ROC-AUC  : 0.9122
+
+Confusion Matrix:
+[[1085  290]
+ [ 202 1184]]

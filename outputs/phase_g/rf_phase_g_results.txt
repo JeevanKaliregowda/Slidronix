@@ -1,0 +1,57 @@
+SLIDRONIX PHASE G - RANDOM FOREST
+==================================
+
+Training samples: 8385
+Validation samples: 2797
+Test samples: 2800
+Number of features: 26
+
+VALIDATION RESULTS
+-------------------
+Accuracy : 0.8023
+Precision: 0.8195
+Recall   : 0.7756
+F1       : 0.7969
+ROC-AUC  : 0.8939
+
+TEST RESULTS
+------------
+Accuracy : 0.8154
+Precision: 0.8286
+Recall   : 0.7949
+F1       : 0.8114
+ROC-AUC  : 0.9093
+
+Confusion Matrix:
+[[1171  230]
+ [ 287 1112]]
+
+FEATURE IMPORTANCE
+------------------
+                Feature  Importance
+              Slope_deg    0.203980
+         Soil_soc_0_5cm    0.090283
+        Soil_bdod_0_5cm    0.078753
+            Elevation_m    0.057053
+              NDVI_mean    0.052864
+        Land_Cover_Type    0.047607
+        Soil_clay_0_5cm    0.039483
+        Soil_sand_0_5cm    0.038037
+       Soil_phh2o_0_5cm    0.035650
+  rainfall_std_daily_mm    0.032805
+               NDVI_std    0.029343
+               NDVI_max    0.029274
+        Soil_silt_0_5cm    0.029164
+               NDVI_min    0.026694
+        rainfall_30d_mm    0.025908
+             NDVI_range    0.025598
+  rainfall_total_30d_mm    0.024854
+ rainfall_mean_daily_mm    0.022726
+  rainfall_max_daily_mm    0.022314
+    rainfall_max_30d_mm    0.021114
+NDVI_valid_observations    0.015995
+         rainfall_7d_mm    0.013520
+     rainfall_max_7d_mm    0.013299
+        rainfall_15d_mm    0.011892
+    rainfall_max_15d_mm    0.011624
+          Land_Cover_QC    0.000166

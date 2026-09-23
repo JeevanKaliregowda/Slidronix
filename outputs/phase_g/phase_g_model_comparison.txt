@@ -1,0 +1,30 @@
+SLIDRONIX PHASE G - MODEL COMPARISON
+====================================
+
+Models evaluated:
+1. Random Forest
+2. MLP
+3. CNN
+4. Rainfall Transformer
+5. Multimodal Fusion
+
+        Model  Accuracy  Precision  Recall     F1  ROC-AUC  Test Samples
+Random Forest    0.8154     0.8286  0.7949 0.8114   0.9093          2800
+          MLP    0.8236     0.7891  0.8828 0.8333   0.8968          2800
+          CNN    0.8124     0.7747  0.8831 0.8254   0.8815          2761
+  Transformer    0.6854     0.7144  0.6169 0.6621   0.7322          2800
+       Fusion    0.8218     0.8033  0.8543 0.8280   0.9122          2761
+
+TEST-SET COVERAGE NOTE
+----------------------
+Random Forest, MLP and Transformer were evaluated on 2,800 Phase E test samples.
+CNN and Fusion were evaluated on 2,761 samples because 39 test locations did not produce valid 32x32 DEM patches.
+Therefore, metrics should be interpreted with this difference in test-set coverage in mind.
+
+MODEL ARCHITECTURE SUMMARY
+---------------------------
+Random Forest: conventional ensemble benchmark using environmental features.
+MLP: tabular environmental feature model.
+CNN: local spatial terrain model using elevation and slope patches.
+Transformer: temporal model using the 30-day rainfall sequence.
+Fusion: multimodal model combining tabular, spatial and rainfall representations.

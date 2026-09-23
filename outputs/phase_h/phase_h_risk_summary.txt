@@ -1,0 +1,24 @@
+SLIDRONIX PHASE H - RISK ASSESSMENT
+====================================
+
+Prediction samples: 2761
+Minimum probability: 0.0001
+Maximum probability: 0.9978
+Mean probability: 0.4974
+
+Risk distribution:
+Risk_Level
+High        1188
+Low         1083
+Moderate     490
+
+Risk thresholds:
+Low      : probability < 0.33
+Moderate : 0.33 <= probability < 0.66
+High     : probability >= 0.66
+
+
+Important limitation:
+The rainfall input currently represents the fixed January 1-30, 2022 reference period. It is not a real-time rainfall trigger.
+
+The Low/Moderate/High thresholds are project-defined visualization thresholds and are not validated operational warning thresholds.

@@ -1,0 +1,12 @@
+SLIDRONIX CNN RESULTS
+=====================
+
+Accuracy: 0.8124
+Precision: 0.7747
+Recall: 0.8831
+F1: 0.8254
+ROC-AUC: 0.8815
+
+Confusion Matrix:
+[[1019  356]
+ [ 162 1224]]

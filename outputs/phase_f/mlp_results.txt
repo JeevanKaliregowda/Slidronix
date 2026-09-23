@@ -1,0 +1,12 @@
+SLIDRONIX MLP RESULTS
+=====================
+
+Accuracy: 0.8236
+Precision: 0.7891
+Recall: 0.8828
+F1: 0.8333
+ROC-AUC: 0.8968
+
+Confusion Matrix:
+[[1071  330]
+ [ 164 1235]]
