@@ -1,0 +1,69 @@
+SLIDRONIX - PHASE E FINAL DATASET SUMMARY
+======================================================================
+
+INPUT
+----------------------------------------------------------------------
+File: C:\Users\jeeva\OneDrive\Desktop\Slidronix\data\processed\slidronix_integrated_dataset_14270.csv
+Rows: 14270
+Columns: 40
+
+BALANCING
+----------------------------------------------------------------------
+Balanced by random undersampling of the background class.
+Random seed: 42
+Final balanced rows: 13982
+Background (0): 6991
+Landslide  (1): 6991
+
+SPATIAL BLOCKING
+----------------------------------------------------------------------
+Spatial block size: 0.1° x 0.1°
+Approximate scale in study region: ~10-11 km
+Unique spatial blocks: 1473
+
+SPATIAL SPLIT
+----------------------------------------------------------------------
+StratifiedGroupKFold with 5 spatial folds.
+Fold 0 = test
+Fold 1 = validation
+Folds 2-4 = training
+
+TRAINING SET
+----------------------------------------------------------------------
+Rows: 8385
+Background (0): 4192
+Landslide  (1): 4193
+Spatial blocks: 881
+
+VALIDATION SET
+----------------------------------------------------------------------
+Rows: 2797
+Background (0): 1398
+Landslide  (1): 1399
+Spatial blocks: 291
+
+TEST SET
+----------------------------------------------------------------------
+Rows: 2800
+Background (0): 1401
+Landslide  (1): 1399
+Spatial blocks: 301
+
+LEAKAGE CHECK
+----------------------------------------------------------------------
+Train/Validation block overlap: 0
+Train/Test block overlap: 0
+Validation/Test block overlap: 0
+
+OUTPUT FILES
+----------------------------------------------------------------------
+C:\Users\jeeva\OneDrive\Desktop\Slidronix\data\processed\phase_e\slidronix_phase_e_balanced.csv
+C:\Users\jeeva\OneDrive\Desktop\Slidronix\data\processed\phase_e\slidronix_phase_e_train.csv
+C:\Users\jeeva\OneDrive\Desktop\Slidronix\data\processed\phase_e\slidronix_phase_e_validation.csv
+C:\Users\jeeva\OneDrive\Desktop\Slidronix\data\processed\phase_e\slidronix_phase_e_test.csv
+
+PHASE E STATUS
+----------------------------------------------------------------------
+Phase E dataset construction completed.
+The final modelling data is class-balanced and spatially partitioned to reduce geographic leakage.
+Phase F can use the train/validation/test files as the fixed modelling split.

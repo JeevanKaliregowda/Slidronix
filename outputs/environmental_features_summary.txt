@@ -1,0 +1,38 @@
+SLIDRONIX PHASE B: DEM ELEVATION & SLOPE FEATURE EXTRACTION REPORT
+=================================================================
+
+DEM DATA SOURCE METRICS:
+  - DEM Source: Copernicus DEM GLO-30 (European Space Agency / AWS Open Data)
+  - Spatial Resolution: 30 meters (1 arc-second, 3600x3600 pixels per 1x1 deg tile)
+  - DEM Coordinate Reference System: EPSG:4326 (WGS 84 Geographic) with EGM2008 height
+  - Geographic Coverage: 30 tiles covering Western Ghats (Lat N08-N19, Lon E072-E077)
+  - Storage Path: C:\Users\jeeva\OneDrive\Desktop\Slidronix\data\raw\dem
+
+SAMPLE VALIDATION STATISTICS:
+  - Total Input Samples: 15,770
+  - Valid Elevation Count: 14,270 (90.49%)
+  - Valid Slope Count: 14,270 (90.49%)
+  - Missing Values Count: 1500
+
+ELEVATION STATISTICS (Meters):
+  - Minimum Elevation: -1.69 m
+  - Maximum Elevation: 2454.66 m
+  - Overall Median Elevation: 599.38 m
+  - Overall Mean Elevation: 602.80 m
+  - 25th Percentile: 187.50 m | 75th Percentile: 820.23 m
+  - Landslides (Y=1) Median: 678.63 m (Mean: 741.88 m)
+  - Background (Y=0) Median: 523.62 m (Mean: 469.23 m)
+
+SLOPE STATISTICS (Degrees - Horn 3x3 Method):
+  - Minimum Slope: 0.00°
+  - Maximum Slope: 63.98°
+  - Overall Median Slope: 12.85°
+  - Overall Mean Slope: 14.17°
+  - 25th Percentile: 3.97° | 75th Percentile: 22.68°
+  - Landslides (Y=1) Median: 20.91° (Mean: 20.49°)
+  - Background (Y=0) Median: 4.68° (Mean: 8.10°)
+
+METHODOLOGICAL NOTES & DESIGN DECISIONS:
+1. Elevation was sampled directly from 30m Copernicus GLO-30 rasters without synthetic interpolation.
+2. Slope was derived using 2D Horn spatial finite differences, accounting for latitude-dependent ground spacing in meters.
+3. All original 15,770 sample rows and attributes were strictly preserved.

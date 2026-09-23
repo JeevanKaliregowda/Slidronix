@@ -1,8 +1,37 @@
+# Python
 venv/
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
 .env
 
-# Raw datasets
-data/raw/
+# Large raw source files
+data/raw/landslide_report_india_overall.pdf
+data/raw/dem/
+
+# AppEEARS downloaded result packages
+data/raw/appeears/results/
+
+# Temporary files
+scratch/
+
+# Temporary rainfall test files
+data/raw/rainfall/test_*.tif
+
+# Experimental/test scripts
+src/*_test.py
+src/test_*.py
+src/fix_rainfall_test.py
+src/extract_chirps_rainfall_test2.py
+
+# AppEEARS downloaded result packages
+data/raw/appeears/results/
+data/raw/appeears/ndvi_lc_processed/
+
+# Temporary rainfall test files
+data/raw/rainfall/test_*.tif
+
+# Experimental/test scripts
+src/*_test.py
+src/test_*.py
+src/fix_rainfall_test.py

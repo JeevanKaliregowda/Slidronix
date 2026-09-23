@@ -1,0 +1,33 @@
+SLIDRONIX PHASE 0.5: WESTERN GHATS POLYGON BINARY DATASET SUMMARY
+=================================================================
+
+Total Positive Samples (Landslide = 1): 7885
+Total Background Samples (Landslide = 0): 7885
+Total Dataset Size: 15770
+Class Balance Ratio: 7885 : 7885 (50.0% : 50.0%)
+
+DUPLICATE POSITIVE COORDINATE INVESTIGATION:
+  - Duplicate Coordinate Groups: 642
+  - Total Positive Records Involved: 1552
+  - Groups with Different Movement Types: 64 (10.0%)
+  - Groups with Different Initiation Years/Events: 40 (6.2%)
+  - Groups with Both Different Types & Events: 10 (1.6%)
+
+BACKGROUND DEDUPLICATION & SPATIAL SEPARATION METRICS:
+  - Background Internal Duplicate Coordinates: 0
+  - Background-Positive Overlapping Coordinates: 0
+  - Minimum Distance (Background to Positive): 1.0025 km
+  - Mean Nearest-Positive Distance: 13.6210 km
+  - Max Distance (Background to Positive): 76.1542 km
+
+STUDY AREA POLYGON COVERAGE:
+  - Western Ghats Polygon Area: 177,853.97 sq km
+  - Sampling Density: 0.0443 background samples/sq km
+  - Latitude Range: [8.313022, 19.798406]
+  - Longitude Range: [72.860905, 77.959828]
+
+METHODOLOGICAL ASSUMPTIONS & DESIGN DECISIONS:
+1. Western Ghats Study Boundary is derived by intersecting official Indian district geometries with a 20 km smooth spatial envelope of historical landslides.
+2. Background samples are generated strictly inside the Western Ghats polygon domain, avoiding rectangular plain/ocean sampling.
+3. Minimum geodesic distance of 1.0 km ensures background points stay outside immediate slope trigger zones.
+4. Duplicate positive coordinates represent distinct historical landslide events or movement types recorded at shared regional coordinates.
