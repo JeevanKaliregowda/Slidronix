@@ -332,6 +332,9 @@ The production build is generated in:
 frontend/dist/
 ~~~
 
+check out:
+https://slidronix.netlify.app/
+
 ---
 
 ## 13. Project Summary
@@ -360,7 +363,10 @@ Slidronix currently implements the complete **Phase A–H modelling and visualiz
 
 ## Authors
 
-**Jeevan Gowda**  
+**Jeevan Kaliregowda** 
+**Vikas**
+**Veerabhadra Prasad R**
+**Kunguma Sanjutha V**
 K. S. Institute of Technology, Bengaluru
 
 **Project:** Slidronix — AI-Based Landslide Early Warning System
