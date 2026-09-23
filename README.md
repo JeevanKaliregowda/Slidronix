@@ -364,9 +364,13 @@ Slidronix currently implements the complete **Phase A–H modelling and visualiz
 ## Authors
 
 **Jeevan Kaliregowda** 
+
 **Vikas**
+
 **Veerabhadra Prasad R**
+
 **Kunguma Sanjutha V**
+
 K. S. Institute of Technology, Bengaluru
 
 **Project:** Slidronix — AI-Based Landslide Early Warning System
