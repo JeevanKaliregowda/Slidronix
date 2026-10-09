@@ -1,16 +1,43 @@
-# React + Vite
+﻿# Slidronix Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Slidronix is an AI-based landslide risk assessment and early warning system for the Western Ghats. This frontend presents landslide risk predictions through an interactive dashboard.
 
-Currently, two official plugins are available:
+## Technology Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React
+- Vite
+- Leaflet for interactive maps
+- Recharts for charts
+- Lucide React for icons
 
-## React Compiler
+## Prerequisites
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Node.js and npm
 
-## Expanding the ESLint configuration
+## Run Locally
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+From the repository root, run:
+
+1. `cd frontend`
+2. `npm install`
+3. `npm run dev`
+
+Open the local URL printed by Vite in your terminal.
+
+## Production Build
+
+From the frontend directory, run `npm run build`.
+
+The production build is generated in `frontend/dist/`.
+
+## Risk Prediction Data
+
+The dashboard reads the static prediction dataset from `frontend/public/data/risk_predictions.json`.
+
+The dashboard displays existing predictions; it does not itself train the machine-learning models.
+
+## Important Limitations
+
+- The displayed predictions are based on an existing dataset, not a live rainfall monitoring pipeline.
+- Risk categories should not be treated as independently validated operational warnings.
+- The dashboard supports project demonstration and risk visualization; it does not replace official disaster-management advisories.
