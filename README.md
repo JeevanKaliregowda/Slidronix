@@ -4,35 +4,31 @@ Slidronix is a geospatial machine-learning project focused on landslide risk ass
 
 ## Current Implementation Status
 
-Implemented components include:
+Implemented components include historical landslide data extraction and cleaning, terrain and environmental feature preparation, spatial dataset construction, model training and comparison, risk prediction generation, and a React-based GIS dashboard.
 
-- Historical landslide inventory extraction and cleaning.
-- Environmental feature preparation using terrain, satellite, soil and rainfall data.
-- Integrated and spatially separated datasets for model development.
-- Random Forest, MLP, CNN, rainfall Transformer and multimodal Fusion models.
-- Model comparison and feature-importance outputs.
-- Spatial risk predictions and a React-based GIS dashboard.
+The dashboard currently displays prepared predictions from a static JSON file. Live environmental API integration, real-time inference, and automated emergency alerts are future enhancements.
 
-The existing dashboard loads predictions from a static JSON file. The complete real-time early-warning and emergency-response workflow is not yet implemented.
+## Project Pipeline
+
+1. **Phase A — Historical Data:** Processed a 582-page inventory and extracted 34,207 historical landslide records.
+2. **Phase B — Terrain:** Used Copernicus DEM GLO-30 to derive elevation and slope.
+3. **Phase C — Satellite and Soil:** Integrated MODIS NDVI, land cover and SoilGrids properties.
+4. **Phase D — Rainfall:** Generated rainfall features from CHIRPS data using a fixed January 1–30, 2022 reference period.
+5. **Phase E — Dataset:** Constructed a balanced spatial dataset with 13,982 samples and spatially separated train, validation and test splits.
+6. **Phase F — Models:** Implemented MLP, CNN, rainfall Transformer and multimodal Fusion models.
+7. **Phase G — Evaluation:** Compared model performance and generated evaluation outputs.
+8. **Phase H — Risk Mapping:** Generated 2,761 aligned risk predictions for the GIS dashboard.
 
 ## Technology Stack
 
-### Machine Learning and Geospatial Processing
-- Python
-- Pandas and NumPy
-- Scikit-learn
-- PyTorch
-- Rasterio and GeoPandas
-- Copernicus DEM, MODIS/AppEEARS, SoilGrids and CHIRPS rainfall data
+- **Languages:** Python, JavaScript
+- **Machine learning:** Scikit-learn, PyTorch
+- **Data processing:** Pandas, NumPy, pdfplumber
+- **Geospatial processing:** Rasterio, GeoPandas
+- **Data sources:** Copernicus DEM GLO-30, MODIS/AppEEARS, SoilGrids and CHIRPS
+- **Frontend:** React, Vite, Leaflet, Recharts and Lucide React
 
-### Frontend
-- React
-- Vite
-- Leaflet and React-Leaflet
-- Recharts
-- Lucide React
-
-## Machine-Learning Models
+## Model Evaluation
 
 | Model | Accuracy | Precision | Recall | F1 | ROC-AUC |
 |---|---:|---:|---:|---:|---:|
@@ -42,16 +38,11 @@ The existing dashboard loads predictions from a static JSON file. The complete r
 | Rainfall Transformer | 0.6854 | 0.7144 | 0.6169 | 0.6621 | 0.7322 |
 | Multimodal Fusion | 0.8218 | 0.8033 | 0.8543 | 0.8280 | 0.9122 |
 
-These are recorded test-set results. CNN and Fusion use 2,761 test samples; the other models use 2,800. The difference arises from locations without valid 32 × 32 DEM patches, so direct comparisons should account for test-set coverage.
+These are recorded test-set results. Random Forest, MLP and Transformer used 2,800 test samples, while CNN and Fusion used 2,761 because some locations lacked valid 32 × 32 terrain patches. Comparisons should account for this difference.
 
-The Fusion model combines:
-- A 26-feature tabular input.
-- A two-channel, 32 × 32 terrain patch containing elevation and slope.
-- A 30-day rainfall sequence.
+The Fusion model combines 26 tabular features, a two-channel 32 × 32 elevation/slope patch, and a 30-day rainfall sequence. MLP has the highest recorded F1 score, while Fusion has the highest recorded ROC-AUC.
 
-No single model is best on every metric: MLP has the highest recorded F1 score, while Fusion has the highest recorded ROC-AUC.
-
-## Risk Mapping
+## Risk Prediction Output
 
 The current Phase H output contains 2,761 predictions.
 
@@ -61,95 +52,74 @@ The current Phase H output contains 2,761 predictions.
 | Moderate | 490 | 17.75% |
 | High | 1,188 | 43.03% |
 
-Current visualization thresholds:
+The dashboard uses project-defined visualization thresholds:
 - Low: probability below 0.33.
 - Moderate: probability from 0.33 to below 0.66.
 - High: probability of 0.66 or greater.
 
-These thresholds are project-defined visualization thresholds, not validated operational warning thresholds. The rainfall sequence currently represents January 1–30, 2022, rather than live rainfall. Consequently, the current map is not a validated real-time warning system.
+These thresholds are not validated operational warning thresholds. The rainfall input represents a fixed historical reference period rather than live rainfall. The current dashboard is therefore not a validated real-time warning system.
+
+## GIS Dashboard
+
+The React and Leaflet dashboard visualizes prepared risk predictions and associated environmental attributes. Current features include interactive map visualization, risk filtering, point selection and display of available prediction details.
+
+Live inference for arbitrary coordinates, real-time rainfall updates, citizen SOS workflows, role-based dashboards, rescue-team management and automated notifications remain planned enhancements.
+
+Existing dashboard: https://slidronix.netlify.app/
 
 ## Repository Structure
 
-```text
-Slidronix/
-├── data/
-│   ├── raw/
-│   └── processed/
-├── frontend/
-│   ├── public/
-│   │   └── data/
-│   │       └── risk_predictions.json
-│   └── src/
-├── implementation documentation/
-├── notebooks/
-├── outputs/
-│   ├── phase_f/
-│   ├── phase_g/
-│   └── phase_h/
-├── scripts/
-│   └── maintenance/
-│       └── download_missing_dem.py
-├── scratch/
-├── src/
-├── .gitignore
-└── README.md
-```
+- `data/` — raw and processed datasets
+- `frontend/` — React/Vite dashboard
+- `implementation documentation/` — phase reports and proposed architecture documents
+- `notebooks/` — notebooks
+- `outputs/` — model artifacts, evaluation results and predictions
+- `scripts/maintenance/` — maintenance utilities
+- `src/` — data processing, feature engineering, model training and prediction scripts
 
-The Python scripts in `src/` cover data extraction, feature engineering, dataset construction, model training, evaluation and risk-map generation. The `outputs/` directory contains saved models, evaluation reports, charts and predictions.
-
-## Running the Existing Frontend
+## Running the Frontend
 
 Requirements: Node.js and npm.
 
 From the repository root:
 
-```powershell
-cd frontend
-npm install
-npm run dev
-```
+1. `cd frontend`
+2. `npm install`
+3. `npm run dev`
 
-Vite will print the local development URL in the terminal.
-
-To build the production frontend:
-
-```powershell
-npm run build
-```
-
-The generated files are placed in `frontend/dist/`.
+To create a production build, run `npm run build` from the `frontend` directory. The output is generated in `frontend/dist/`.
 
 ## Python Environment
 
-A Python virtual environment is present in the local development setup. To activate it from the repository root on Windows:
+From the repository root on Windows, activate the existing virtual environment with:
 
-```powershell
-.\venv\Scripts\Activate.ps1
-```
+`.\venv\Scripts\Activate.ps1`
 
-The project scripts use relative paths such as `data/processed/` and `outputs/`. Run them from the repository root unless a script explicitly documents otherwise.
+Run project scripts from the repository root unless the script specifies otherwise, because scripts may use relative paths such as `data/processed/` and `outputs/`.
 
-Python dependencies have not yet been consolidated into a verified, reproducible requirements file. Model inference should reproduce the preprocessing and normalization used during training.
+Python dependencies have not yet been consolidated into a verified, reproducible requirements file.
 
 ## Planned Development
 
-The following components remain part of the intended full system and should not be assumed to be implemented:
-
-- FastAPI backend and prediction endpoints.
-- PostgreSQL with PostGIS spatial storage.
-- User authentication and role-based dashboards.
-- Citizen incident reporting and SOS workflows.
-- Rescue-team incident management and emergency notifications.
-- Progressive Web App push notifications.
-- Risk-aware route comparison.
-- Live rainfall integration and validated warning logic.
-- Automated testing and production deployment.
+- FastAPI backend and prediction endpoints
+- PostgreSQL with PostGIS
+- Authentication and role-based dashboards
+- Citizen incident reporting and SOS workflows
+- Rescue-team incident management and notifications
+- Progressive Web App push notifications
+- Risk-aware route comparison
+- Live rainfall integration and validated warning logic
+- Automated tests and production deployment
 
 ## Safety and Research Limitations
 
-Slidronix is a research and engineering project. Model probabilities and map categories must not be treated as authoritative emergency instructions. Real-time warnings require reliable live data, appropriate validation, monitoring, calibrated thresholds and coordination with relevant authorities.
+Slidronix is a research and engineering project. Model probabilities and map categories must not be treated as authoritative emergency instructions. Operational warnings require reliable live data, appropriate validation, calibrated thresholds, monitoring and coordination with relevant authorities.
 
-## Documentation
+## Authors
 
-Implementation reports and proposed architecture documents are stored in `implementation documentation/`.
+- Jeevan Kaliregowda
+- Vikas
+- Veerabhadra Prasad R
+- Kunguma Sanjutha V
 
+K. S. Institute of Technology, Bengaluru
