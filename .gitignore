@@ -1,37 +1,34 @@
-# Python
+﻿# Python environment and generated files
 venv/
 __pycache__/
-*.pyc
+*.py[cod]
 .ipynb_checkpoints/
-.env
 
-# Large raw source files
+# Secrets and local environment configuration
+.env
+.env.*
+!.env.example
+
+# Large raw source data
 data/raw/landslide_report_india_overall.pdf
 data/raw/dem/
 
-# AppEEARS downloaded result packages
+# Downloaded or locally processed satellite data
 data/raw/appeears/results/
+data/raw/appeears/ndvi_lc_processed/
 
-# Temporary files
-scratch/
-
-# Temporary rainfall test files
+# Temporary rainfall raster files
 data/raw/rainfall/test_*.tif
 
-# Experimental/test scripts
+# Scratch experiments
+scratch/
+
+# Python test and temporary scripts
 src/*_test.py
 src/test_*.py
 src/fix_rainfall_test.py
 src/extract_chirps_rainfall_test2.py
 
-# AppEEARS downloaded result packages
-data/raw/appeears/results/
-data/raw/appeears/ndvi_lc_processed/
-
-# Temporary rainfall test files
-data/raw/rainfall/test_*.tif
-
-# Experimental/test scripts
-src/*_test.py
-src/test_*.py
-src/fix_rainfall_test.py
+# Frontend dependencies and build output
+frontend/node_modules/
+frontend/dist/

@@ -1,376 +1,125 @@
-# Slidronix — AI-Based Landslide Early Warning System
+﻿# Slidronix: AI-Based Landslide Early Warning System
 
-Slidronix is an AI-based landslide risk assessment and early-warning system developed for the Western Ghats of India.
+Slidronix is a geospatial machine-learning project focused on landslide risk assessment in the Western Ghats of India. It combines historical landslide inventories with terrain, satellite, soil and rainfall features to train and evaluate models and generate spatial risk predictions.
 
-The system combines **historical landslide records, terrain data, satellite observations, soil properties, and rainfall sequences** to build a multimodal environmental dataset. Machine-learning and deep-learning models are used to estimate landslide risk and visualize predictions through an interactive GIS dashboard.
+## Current Implementation Status
 
-> **Current status:** Phases **A–H are implemented**. The current Phase H system produces probabilistic risk predictions and GIS visualization from the prepared environmental dataset. Live environmental API integration and real-time rainfall are future enhancements.
+Implemented components include historical landslide data extraction and cleaning, terrain and environmental feature preparation, spatial dataset construction, model training and comparison, risk prediction generation, and a React-based GIS dashboard.
 
----
+The dashboard currently displays prepared predictions from a static JSON file. Live environmental API integration, real-time inference, and automated emergency alerts are future enhancements.
 
-## 1. Project Objective
+## Project Pipeline
 
-Slidronix aims to:
-- Process and standardize historical landslide information.
-- Extract terrain and environmental features.
-- Integrate satellite, soil, and rainfall information.
-- Construct a balanced spatial dataset for landslide-risk modelling.
-- Learn **tabular, spatial, and temporal** representations.
-- Compare machine-learning and deep-learning models.
-- Generate probabilistic landslide-risk predictions.
-- Visualize risk through an interactive GIS dashboard.
+1. **Phase A — Historical Data:** Processed a 582-page inventory and extracted 34,207 historical landslide records.
+2. **Phase B — Terrain:** Used Copernicus DEM GLO-30 to derive elevation and slope.
+3. **Phase C — Satellite and Soil:** Integrated MODIS NDVI, land cover and SoilGrids properties.
+4. **Phase D — Rainfall:** Generated rainfall features from CHIRPS data using a fixed January 1–30, 2022 reference period.
+5. **Phase E — Dataset:** Constructed a balanced spatial dataset with 13,982 samples and spatially separated train, validation and test splits.
+6. **Phase F — Models:** Implemented MLP, CNN, rainfall Transformer and multimodal Fusion models.
+7. **Phase G — Evaluation:** Compared model performance and generated evaluation outputs.
+8. **Phase H — Risk Mapping:** Generated 2,761 aligned risk predictions for the GIS dashboard.
 
----
+## Technology Stack
 
-## 2. System Pipeline
+- **Languages:** Python, JavaScript
+- **Machine learning:** Scikit-learn, PyTorch
+- **Data processing:** Pandas, NumPy, pdfplumber
+- **Geospatial processing:** Rasterio, GeoPandas
+- **Data sources:** Copernicus DEM GLO-30, MODIS/AppEEARS, SoilGrids and CHIRPS
+- **Frontend:** React, Vite, Leaflet, Recharts and Lucide React
 
-~~~text
-Historical Landslide Inventory
-            ↓
-Phase A — Foundation + Baseline RF
-            ↓
-Phase B — DEM + Terrain Features
-            ↓
-Phase C — NDVI + Land Cover + Soil
-            ↓
-Phase D — Rainfall Features
-            ↓
-Phase E — Balanced Spatial Dataset
-            ↓
-Phase F — MLP + CNN + Transformer + Fusion
-            ↓
-Phase G — Model Comparison
-            ↓
-Phase H — Risk Mapping + GIS Dashboard
-~~~
+## Model Evaluation
 
----
+| Model | Accuracy | Precision | Recall | F1 | ROC-AUC |
+|---|---:|---:|---:|---:|---:|
+| Random Forest | 0.8154 | 0.8286 | 0.7949 | 0.8114 | 0.9093 |
+| MLP | 0.8236 | 0.7891 | 0.8828 | 0.8333 | 0.8968 |
+| CNN | 0.8124 | 0.7747 | 0.8831 | 0.8254 | 0.8815 |
+| Rainfall Transformer | 0.6854 | 0.7144 | 0.6169 | 0.6621 | 0.7322 |
+| Multimodal Fusion | 0.8218 | 0.8033 | 0.8543 | 0.8280 | 0.9122 |
 
-## 3. Phase-wise Implementation
+These are recorded test-set results. Random Forest, MLP and Transformer used 2,800 test samples, while CNN and Fusion used 2,761 because some locations lacked valid 32 × 32 terrain patches. Comparisons should account for this difference.
 
-### Phase A — Historical Data & Baseline Model
+The Fusion model combines 26 tabular features, a two-channel 32 × 32 elevation/slope patch, and a 30-day rainfall sequence. MLP has the highest recorded F1 score, while Fusion has the highest recorded ROC-AUC.
 
-- Processed a **582-page historical landslide inventory** using Python and pdfplumber.
-- Extracted **34,207 historical landslide records** with 11 attributes.
-- Performed coordinate validation, missing-value handling, categorical cleaning and duplicate removal.
-- Implemented a **Random Forest baseline classifier**.
-- Input: latitude, longitude, state and material involved.
-- Target: movement type.
-- Train/test: 80/20 stratified split.
-- Training: **27,183** | Testing: **6,796**
-- Baseline accuracy: **69.60%**
+## Risk Prediction Output
 
-### Phase B — Terrain Features
+The current Phase H output contains 2,761 predictions.
 
-Used **Copernicus DEM GLO-30** to derive:
-- Elevation
-- Slope
-
-The terrain dataset contains **14,270 spatial samples**.
-
-### Phase C — Satellite & Soil Features
-
-**Satellite**
-- MODIS MOD13Q1.061 → NDVI
-- MODIS MCD12Q1.061 → Land Cover
-
-**NDVI features**
-- Mean, standard deviation, minimum, maximum, valid observations and range.
-
-**Soil — SoilGrids**
-- Clay
-- Sand
-- Silt
-- Soil Organic Carbon
-- Bulk Density
-- Soil pH
-
-### Phase D — Rainfall
-
-Used **CHIRPS v3 daily satellite rainfall**.
-
-The current implementation uses a fixed **1–30 January 2022 reference period**.
-
-Generated:
-- 7-day, 15-day and 30-day accumulated rainfall
-- Mean daily rainfall
-- Maximum daily rainfall
-- Standard deviation
-- Maximum rainfall over 7/15/30-day windows
-- 30 daily rainfall observations for the temporal Transformer
-
-> **Limitation:** the current rainfall implementation is a fixed reference period. Event-aligned and real-time rainfall integration are future enhancements.
-
-### Phase E — Balanced Spatial Dataset
-
-Constructed a binary dataset using historical landslide locations and spatially generated background locations.
-
-- Study region: Maharashtra, Goa, Karnataka, Kerala and Tamil Nadu.
-- Minimum **1 km separation** between background and positive locations.
-- Balanced classes.
-- Spatial block-based train/validation/test splitting.
-- **0 spatial block overlap** between splits.
-
-| Dataset | Samples |
-|---|---:|
-| Landslide | 6,991 |
-| Background | 6,991 |
-| **Total** | **13,982** |
-| Training | 8,385 |
-| Validation | 2,797 |
-| Testing | 2,800 |
-
-### Phase F — Deep Learning & Multimodal Fusion
-
-**MLP — Tabular Encoder**
-- Uses **26 environmental features**.
-- Architecture: 26 → 128 → 64 → 32 → 1
-
-**CNN — Spatial Encoder**
-- Uses **32 × 32 terrain patches** containing elevation and slope.
-
-**Transformer — Temporal Encoder**
-- Uses the **30-day rainfall sequence**.
-- 2 Transformer encoder layers, 64-dimensional representation and 4 attention heads.
-
-**Fusion Model**
-Combines the three learned representations:
-
-~~~text
-Tabular MLP ─────────┐
-Spatial CNN ─────────┼──→ Feature Fusion → Fusion Head
-Temporal Transformer ┘
-                              ↓
-                    Landslide Probability
-                              0 ——— 1
-~~~
-
-### Phase G — Model Comparison
-
-| Model | Accuracy | F1-Score | ROC-AUC |
-|---|---:|---:|---:|
-| Random Forest | 81.54% | 81.14% | 0.9093 |
-| MLP | 82.36% | 83.33% | 0.8968 |
-| CNN | 81.24% | 82.54% | 0.8815 |
-| Transformer | 68.54% | 66.21% | 0.7322 |
-| **Fusion** | **82.18%** | **82.80%** | **0.9122** |
-
-> CNN and Fusion used **2,761 aligned test samples** because valid 32 × 32 terrain patches are required. Other models used 2,800 test samples.
-
-### Phase H — Risk Prediction & GIS Mapping
-
-The Fusion model generates a probability from **0 to 1**.
-
-- Aligned predictions: **2,761**
-- Probability range: **0.0001–0.9978**
-- Mean probability: **0.4974**
-
-| Risk Level | Samples | Percentage |
+| Risk category | Samples | Percentage |
 |---|---:|---:|
 | Low | 1,083 | 39.22% |
 | Moderate | 490 | 17.75% |
 | High | 1,188 | 43.03% |
 
-The predictions are visualized through an interactive React + Leaflet GIS dashboard.
+The dashboard uses project-defined visualization thresholds:
+- Low: probability below 0.33.
+- Moderate: probability from 0.33 to below 0.66.
+- High: probability of 0.66 or greater.
 
----
+These thresholds are not validated operational warning thresholds. The rainfall input represents a fixed historical reference period rather than live rainfall. The current dashboard is therefore not a validated real-time warning system.
 
-## 4. GIS Dashboard
+## GIS Dashboard
 
-### Features
-- Interactive risk map
-- Satellite and street basemaps
-- Risk-level filtering
-- Point selection
-- Risk probability
-- Latitude/longitude
-- Elevation and slope
-- Rainfall
-- NDVI
-- Soil pH
-- Land cover
-- Prediction ID
-- Reverse-geocoded location information
+The React and Leaflet dashboard visualizes prepared risk predictions and associated environmental attributes. Current features include interactive map visualization, risk filtering, point selection and display of available prediction details.
 
-The current dashboard visualizes generated Phase H predictions from the prepared dataset. It is **not currently a real-time inference system**.
+Live inference for arbitrary coordinates, real-time rainfall updates, citizen SOS workflows, role-based dashboards, rescue-team management and automated notifications remain planned enhancements.
 
----
+Existing dashboard: https://slidronix.netlify.app/
 
-## 5. Data Sources
+## Repository Structure
 
-| Data | Source | Purpose |
-|---|---|---|
-| Historical landslides | Historical landslide inventory | Landslide records |
-| DEM | Copernicus DEM GLO-30 | Elevation and slope |
-| NDVI | MODIS MOD13Q1.061 | Vegetation |
-| Land Cover | MODIS MCD12Q1.061 | Land-cover classification |
-| Soil | SoilGrids | Soil properties |
-| Rainfall | CHIRPS v3 | Rainfall features |
+- `data/` — raw and processed datasets
+- `frontend/` — React/Vite dashboard
+- `implementation documentation/` — phase reports and proposed architecture documents
+- `notebooks/` — notebooks
+- `outputs/` — model artifacts, evaluation results and predictions
+- `scripts/maintenance/` — maintenance utilities
+- `src/` — data processing, feature engineering, model training and prediction scripts
 
----
+## Running the Frontend
 
-## 6. Technology Stack
+Requirements: Node.js and npm.
 
-**Languages:** Python, JavaScript
+From the repository root:
 
-**ML/DL:** Scikit-learn, PyTorch, Random Forest, MLP, CNN, Transformer
+1. `cd frontend`
+2. `npm install`
+3. `npm run dev`
 
-**Data Processing:** Pandas, NumPy, pdfplumber, Rasterio
+To create a production build, run `npm run build` from the `frontend` directory. The output is generated in `frontend/dist/`.
 
-**GIS:** Spatial processing, Leaflet
+## Python Environment
 
-**Frontend:** React, Vite, Leaflet, Lucide React
+From the repository root on Windows, activate the existing virtual environment with:
 
-**Version Control:** Git, GitHub
+`.\venv\Scripts\Activate.ps1`
 
----
+Run project scripts from the repository root unless the script specifies otherwise, because scripts may use relative paths such as `data/processed/` and `outputs/`.
 
-## 7. Repository Structure
+Python dependencies have not yet been consolidated into a verified, reproducible requirements file.
 
-~~~text
-Slidronix/
-├── data/
-│   ├── raw/
-│   └── processed/
-├── frontend/
-│   ├── public/
-│   └── src/
-├── outputs/
-│   ├── charts/
-│   ├── maps/
-│   ├── phase_f/
-│   ├── phase_g/
-│   └── phase_h/
-├── src/
-│   ├── extract_dem_features.py
-│   ├── extract_soil_features.py
-│   ├── extract_chirps_rainfall.py
-│   ├── create_rainfall_features.py
-│   ├── create_integrated_dataset.py
-│   ├── finalize_phase_e_dataset.py
-│   ├── train_baseline_model.py
-│   ├── train_mlp.py
-│   ├── train_cnn.py
-│   ├── train_transformer.py
-│   ├── train_fusion.py
-│   ├── train_rf_phase_g.py
-│   ├── create_phase_g_comparison.py
-│   ├── generate_phase_h_risk_predictions.py
-│   └── create_phase_h_risk_map.py
-└── README.md
-~~~
+## Planned Development
 
----
+- FastAPI backend and prediction endpoints
+- PostgreSQL with PostGIS
+- Authentication and role-based dashboards
+- Citizen incident reporting and SOS workflows
+- Rescue-team incident management and notifications
+- Progressive Web App push notifications
+- Risk-aware route comparison
+- Live rainfall integration and validated warning logic
+- Automated tests and production deployment
 
-## 8. Key Outputs
+## Safety and Research Limitations
 
-- **34,207** historical landslide records processed.
-- **13,982** balanced modelling samples created.
-- Terrain, satellite, soil and rainfall features integrated.
-- MLP, CNN, Transformer and Fusion models implemented.
-- Five-model comparative evaluation completed.
-- **2,761** aligned Phase H predictions generated.
-- Interactive GIS risk dashboard implemented.
-
----
-
-## 9. Limitations
-
-1. Rainfall currently uses a fixed **1–30 January 2022 reference period**.
-2. The dashboard currently visualizes prepared predictions rather than performing live inference for arbitrary coordinates.
-3. Real-time rainfall and environmental API integration is not yet connected.
-4. CNN/Fusion use fewer aligned test samples because valid terrain patches are required.
-5. The study-region boundary is a project-derived spatial boundary for the selected Western Ghats states, not an official definition of the Western Ghats.
-
----
-
-## 10. Future Enhancements
-
-- Event-aligned rainfall histories.
-- Real-time rainfall and environmental API integration.
-- Coordinate-based feature generation.
-- FastAPI inference backend.
-- Dynamic GIS risk updates.
-- Automated risk-alert engine.
-- Additional environmental and historical data.
-- Longer/event-centered temporal rainfall sequences.
-
----
-
-## 11. Project Status
-
-| Phase | Status |
-|---|---|
-| Phase A — Foundation | ✅ Completed |
-| Phase B — Terrain | ✅ Completed |
-| Phase C — Satellite + Soil | ✅ Completed |
-| Phase D — Rainfall | ✅ Completed |
-| Phase E — Dataset Construction | ✅ Completed |
-| Phase F — Deep Learning | ✅ Completed |
-| Phase G — Model Comparison | ✅ Completed |
-| Phase H — Risk Mapping | ✅ Completed |
-
----
-
-## 12. Running the Dashboard
-
-~~~bash
-cd frontend
-npm install
-npm run dev
-~~~
-
-For a production build:
-
-~~~bash
-npm run build
-~~~
-
-The production build is generated in:
-
-~~~text
-frontend/dist/
-~~~
-
-check out:
-https://slidronix.netlify.app/
-
----
-
-## 13. Project Summary
-
-~~~text
-Historical Data
-      ↓
-Terrain + Satellite + Soil + Rainfall
-      ↓
-Balanced Spatial Dataset
-      ↓
-MLP + CNN + Transformer
-      ↓
-Multimodal Fusion
-      ↓
-Landslide Probability
-      ↓
-Risk Classification
-      ↓
-GIS Visualization
-~~~
-
-Slidronix currently implements the complete **Phase A–H modelling and visualization pipeline**. Live environmental integration and automated real-time alerts remain planned enhancements.
-
----
+Slidronix is a research and engineering project. Model probabilities and map categories must not be treated as authoritative emergency instructions. Operational warnings require reliable live data, appropriate validation, calibrated thresholds, monitoring and coordination with relevant authorities.
 
 ## Authors
 
-**Jeevan Kaliregowda** 
-
-**Vikas**
-
-**Veerabhadra Prasad R**
-
-**Kunguma Sanjutha V**
+- Jeevan Kaliregowda
+- Vikas
+- Veerabhadra Prasad R
+- Kunguma Sanjutha V
 
 K. S. Institute of Technology, Bengaluru
-
-**Project:** Slidronix — AI-Based Landslide Early Warning System
