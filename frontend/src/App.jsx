@@ -88,6 +88,7 @@ function App() {
   }, [points, filter]);
 
 
+
   const statistics = useMemo(() => {
     return {
       total: points.length,
@@ -96,6 +97,10 @@ function App() {
       high: points.filter((p) => p.Risk_Level === "High").length,
     };
   }, [points]);
+  const riskPercentage = (count) =>
+    statistics.total > 0
+      ? ((count / statistics.total) * 100).toFixed(1)
+      : "0.0";
 
   async function selectPoint(point) {
     const requestId = ++locationRequestId.current;
@@ -270,19 +275,19 @@ function App() {
           <div className="stat-card">
             <span>High Risk</span>
             <strong>{statistics.high.toLocaleString()}</strong>
-            <small>Model classification</small>
+            <small>{riskPercentage(statistics.high)}% of locations</small>
           </div>
 
           <div className="stat-card">
             <span>Moderate Risk</span>
             <strong>{statistics.moderate.toLocaleString()}</strong>
-            <small>Model classification</small>
+            <small>{riskPercentage(statistics.moderate)}% of locations</small>
           </div>
 
           <div className="stat-card">
             <span>Low Risk</span>
             <strong>{statistics.low.toLocaleString()}</strong>
-            <small>Model classification</small>
+            <small>{riskPercentage(statistics.low)}% of locations</small>
           </div>
 
         </section>
