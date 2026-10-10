@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Activity,
   BarChart3,
@@ -73,6 +73,7 @@ function App() {
   const [filter, setFilter] = useState("All");
   const [locationInfo, setLocationInfo] = useState(null);
   const [loadingLocation, setLoadingLocation] = useState(false);
+  const locationRequestId = useRef(0);
 
   useEffect(() => {
     fetch("/data/risk_predictions.json")
@@ -86,6 +87,7 @@ function App() {
     return points.filter((point) => point.Risk_Level === filter);
   }, [points, filter]);
 
+
   const statistics = useMemo(() => {
     return {
       total: points.length,
@@ -96,6 +98,8 @@ function App() {
   }, [points]);
 
   async function selectPoint(point) {
+    const requestId = ++locationRequestId.current;
+
     setSelected(point);
     setLocationInfo(null);
     setLoadingLocation(true);
@@ -116,14 +120,23 @@ function App() {
         },
       });
 
+      if (requestId !== locationRequestId.current) return;
+
       if (response.ok) {
         const data = await response.json();
-        setLocationInfo(data);
+
+        if (requestId === locationRequestId.current) {
+          setLocationInfo(data);
+        }
       }
     } catch (error) {
-      console.error("Reverse geocoding failed:", error);
+      if (requestId === locationRequestId.current) {
+        console.error("Reverse geocoding failed:", error);
+      }
     } finally {
-      setLoadingLocation(false);
+      if (requestId === locationRequestId.current) {
+        setLoadingLocation(false);
+      }
     }
   }
 
@@ -298,7 +311,13 @@ function App() {
 
               <select
                 value={filter}
-                onChange={(event) => setFilter(event.target.value)}
+                onChange={(event) => {
+                  locationRequestId.current += 1;
+                  setFilter(event.target.value);
+                  setSelected(null);
+                  setLocationInfo(null);
+                  setLoadingLocation(false);
+                }}
               >
                 <option value="All">All risk levels</option>
                 <option value="Low">Low</option>
@@ -835,14 +854,6 @@ function DataSource({ name, category, description, icon }) {
 
       </div>
 
-    </div>
-  );
-}
-function DataRow({ title, value }) {
-  return (
-    <div className="data-row">
-      <strong>{title}</strong>
-      <span>{value}</span>
     </div>
   );
 }
