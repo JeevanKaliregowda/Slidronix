@@ -4,9 +4,9 @@ Slidronix is a geospatial machine-learning project focused on landslide risk ass
 
 ## Current Implementation Status
 
-Implemented components include historical landslide data extraction and cleaning, terrain and environmental feature preparation, spatial dataset construction, model training and comparison, risk prediction generation, and a React-based GIS dashboard.
+The repository contains the historical data and model pipeline, a React/Leaflet dashboard, and a FastAPI backend for JWT authentication, role-protected workspaces, incident and SOS records, alerts, prepared prediction data, and coordinate inference. Public registration creates citizen accounts. An administrator must bootstrap the first administrator account before other workspace roles can be assigned.
 
-The dashboard currently displays prepared predictions from a static JSON file. Live environmental API integration, real-time inference, and automated emergency alerts are future enhancements.
+The dashboard can show the prepared Phase H risk surface. Coordinate assessment invokes the Fusion inference endpoint when its local data/model assets and external data sources are available. The risk surface and inference are research outputs, not validated operational warnings.
 
 ## Project Pipeline
 
@@ -59,11 +59,13 @@ The dashboard uses project-defined visualization thresholds:
 
 These thresholds are not validated operational warning thresholds. The rainfall input represents a fixed historical reference period rather than live rainfall. The current dashboard is therefore not a validated real-time warning system.
 
-## GIS Dashboard
+## GIS Dashboard and Workspaces
 
-The React and Leaflet dashboard visualizes prepared risk predictions and associated environmental attributes. Current features include interactive map visualization, risk filtering, point selection and display of available prediction details.
+The React and Leaflet dashboard visualizes prepared risk predictions and associated environmental attributes. Signed-in users receive a workspace based on their backend account role: citizen, rescue, researcher, or administrator. Incident and SOS records are account-scoped for citizens; rescue and administrator accounts can review shared response queues. Administrators can assign roles to other accounts.
 
-Live inference for arbitrary coordinates, real-time rainfall updates, citizen SOS workflows, role-based dashboards, rescue-team management and automated notifications remain planned enhancements.
+The coordinate assessment endpoint requires the local Fusion assets and is not guaranteed to be ready. Static predictions are the prepared Phase H dataset. Route geometry is requested from a configurable road-routing provider; route-wide exposure scoring, push notifications, and live sensor integrations are not implemented.
+
+Place search and road routing are available as configurable map-provider integrations described below. The Fusion API supports point inference only; it does not produce a route-wide hazard score, so a computed road route must not be described as safe.
 
 Existing dashboard: https://slidronix.netlify.app/
 
@@ -89,6 +91,32 @@ From the repository root:
 
 To create a production build, run `npm run build` from the `frontend` directory. The output is generated in `frontend/dist/`.
 
+During local development Vite proxies the API routes to `http://127.0.0.1:8000`. Set `VITE_API_PROXY_TARGET` to use another backend host. For a deployed frontend, set `VITE_API_BASE_URL` at build time and configure the backend's `CORS_ORIGINS` setting.
+
+### Place search and road routing
+
+The default geocoder is the Photon public demo (`https://photon.komoot.io`), which supports place and address lookup without an API key. Search waits until the user types at least three characters, debounces requests, caches recent results, and spaces requests to stay below one request per second. Photon is a community demo without an availability guarantee; use a permitted hosted provider or self-hosted Photon instance for dependable or higher-volume service. OpenStreetMap is credited in the UI.
+
+Road geometry and maneuver data use the OSRM-compatible demo endpoint at `https://router.project-osrm.org`. A request is sent only when the user submits both selected places. Provider-returned geometry and turn steps are displayed only when a valid route response arrives. The public demo is for modest evaluation use and has no availability or throughput guarantee; configure a self-hosted OSRM server or another compatible service for production. Route timing is an estimate. Slidronix does not calculate risk over every route segment or guarantee a safe path. The optional endpoint assessment runs two independent Fusion coordinate predictions and does not evaluate the corridor.
+
+Override providers in the same PowerShell session used to start Vite:
+
+```powershell
+$env:VITE_GEOCODER_BASE_URL = "https://photon.komoot.io"
+$env:VITE_ROUTING_BASE_URL = "https://router.project-osrm.org"
+npm run dev -- --host 127.0.0.1 --port 5173
+```
+
+Set `VITE_GEOCODER_BASE_URL` to another Photon-compatible endpoint or set `VITE_ROUTING_BASE_URL` to an OSRM-compatible route API. Set either variable to `disabled` to show the unavailable state. Provider URLs are compiled into the frontend and must not contain private API keys.
+
+## Running the Backend
+
+Use Python 3.10 or newer. From the repository root, create `backend/.env` with a strong, private `JWT_SECRET_KEY` (at least 32 random bytes encoded as text). Set `DATABASE_URL` only when using a database other than the default `slidronix_demo.db`; the backend creates missing tables and performs an additive ownership-column migration while preserving existing records. Do not commit the environment file.
+
+Install `backend/requirements.txt`, then start the API from the `backend` directory with `python -m uvicorn app.main:app --reload`. The API docs are available at `/docs` while it is running. For a new installation with no administrator, run `python -m app.bootstrap_admin` from `backend`; it prompts for the account and password and refuses to create a second administrator.
+
+The API requires bearer-token authentication for prediction, inference, incident, SOS, and alert routes. Register a citizen account in the frontend, then sign in. Administrators assign rescue/researcher roles in User management. Development checks: run `npm run build` and `npm run lint` from `frontend`, and `python -m pytest` from `backend`.
+
 ## Python Environment
 
 From the repository root on Windows, activate the existing virtual environment with:
@@ -97,19 +125,15 @@ From the repository root on Windows, activate the existing virtual environment w
 
 Run project scripts from the repository root unless the script specifies otherwise, because scripts may use relative paths such as `data/processed/` and `outputs/`.
 
-Python dependencies have not yet been consolidated into a verified, reproducible requirements file.
+Backend runtime and test dependencies are declared in `backend/requirements.txt`. The manifest matches the current backend imports; a clean environment installation has not been verified in this release check.
 
-## Planned Development
+## Remaining Development
 
-- FastAPI backend and prediction endpoints
-- PostgreSQL with PostGIS
-- Authentication and role-based dashboards
-- Citizen incident reporting and SOS workflows
-- Rescue-team incident management and notifications
-- Progressive Web App push notifications
-- Risk-aware route comparison
-- Live rainfall integration and validated warning logic
-- Automated tests and production deployment
+- Production database operations and deployment hardening
+- Push notification delivery
+- Route-wide hazard exposure scoring and comparison of risk-aware alternatives
+- Validated warning thresholds, live-data monitoring, and operational evaluation
+- Further testing of live inference against the required local assets and provider availability
 
 ## Safety and Research Limitations
 

@@ -32,3 +32,12 @@ src/extract_chirps_rainfall_test2.py
 # Frontend dependencies and build output
 frontend/node_modules/
 frontend/dist/
+
+# Local databases and backups
+*.db
+*.sqlite
+*.sqlite3
+backups/
+frontend.zip
+*.bak_*
+*.disabled_*
