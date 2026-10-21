@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Activity, AlertTriangle, BarChart3, Bell, CheckCircle2, ChevronDown,
   CircleHelp, Database, FileText, Gauge, LogOut, Map as MapIcon,
@@ -52,6 +52,10 @@ function WorkspaceApp({ session, onLogout }) {
   const [sosForm,setSosForm] = useState({message:"Emergency assistance requested",latitude:"13.3161",longitude:"75.772",contact_name:session.name,contact_phone:""});
   const [alertForm,setAlertForm] = useState({title:"",message:"",risk_level:"High",latitude:"13.3161",longitude:"75.772"});
   const [mobileNav,setMobileNav] = useState(false);
+  const [notificationPermission,setNotificationPermission] = useState(
+    typeof Notification === "undefined" ? "unsupported" : Notification.permission
+  );
+  const seenAlertIds = useRef(null);
 
   const api = useCallback(async (path,options={})=>{
     const response = await fetch(`${API}${path}`,{...options,headers:{...authHeaders(),"Content-Type":"application/json",...(options.headers||{})}});
@@ -104,6 +108,66 @@ function WorkspaceApp({ session, onLogout }) {
     return ()=>{cancelled=true;};
   },[refreshOperations]);
 
+  // Foreground mobile/browser warning simulation. Existing alerts form the baseline,
+  // so old warnings do not trigger a burst of notifications on page load.
+  useEffect(()=>{
+    let cancelled=false;
+    async function checkForWarnings(){
+      try{
+        const latest=safeArray(await api("/alerts?limit=100"));
+        if(cancelled)return;
+        if(seenAlertIds.current===null){
+          seenAlertIds.current=new Set(latest.map(item=>item.id));
+          setAlerts(latest);
+          return;
+        }
+        const previous=seenAlertIds.current;
+        const newWarnings=latest.filter(item=>
+          !previous.has(item.id) && ["high","critical"].includes(String(item.risk_level||"").toLowerCase())
+          && !["resolved","cancelled","closed"].includes(String(item.status||"active").toLowerCase())
+        );
+        latest.forEach(item=>previous.add(item.id));
+        setAlerts(latest);
+        if(typeof Notification!=="undefined" && Notification.permission==="granted"){
+          newWarnings.forEach(item=>{
+            const risk=String(item.risk_level||"High").toUpperCase();
+            new Notification("Slidronix "+risk+" landslide warning",{
+              body:item.title+(item.message?": "+item.message:""),
+              tag:"slidronix-alert-"+item.id,
+              icon:"/favicon.ico"
+            });
+          });
+        }
+      }catch{
+        // Keep the dashboard usable if polling briefly fails.
+      }
+    }
+    checkForWarnings();
+    const timer=window.setInterval(checkForWarnings,15000);
+    return ()=>{cancelled=true;window.clearInterval(timer);};
+  },[api]);
+
+  async function enableBrowserNotifications(){
+    if(typeof Notification==="undefined"){
+      setError("This browser does not support web notifications. Try a supported mobile browser over HTTPS.");
+      return;
+    }
+    try{
+      const permission=await Notification.requestPermission();
+      setNotificationPermission(permission);
+      if(permission==="granted"){
+        setNotice("Notifications enabled on this device while Slidronix is open.");
+        new Notification("Slidronix notifications enabled",{body:"High and Critical landslide warnings will appear while this dashboard remains open."});
+      }else if(permission==="denied"){
+        setError("Notifications are blocked for this site. Change the site's notification permission in your browser settings.");
+      }else{
+        setNotice("Notification permission was not granted.");
+      }
+    }catch{
+      setError("Could not request notification permission in this browser.");
+    }
+  }
+
   const counts=useMemo(()=>({
     total:points.length,low:points.filter(p=>riskOf(p)==="Low").length,
     moderate:points.filter(p=>riskOf(p)==="Moderate").length,
@@ -153,7 +217,7 @@ function WorkspaceApp({ session, onLogout }) {
   function CheckArea(){return <><SectionHead eyebrow="LOCATION ASSESSMENT" title="Check my area" description="Choose a point on the map or search for a place, then run the existing Fusion coordinate inference."/><CheckAreaTool api={api} onAssessment={(result)=>setSelected({Latitude:result.latitude,Longitude:result.longitude,Risk_Level:result.risk_level,Landslide_Probability:result.landslide_probability,isFreshInference:true})}/></>;}
   function IncidentForm(){return <><SectionHead eyebrow="COMMUNITY REPORTING" title="Report an incident" description="Record a landslide or other observed hazard for operational review."/><div className="split-layout"><section className="surface-card"><form onSubmit={e=>{e.preventDefault();submitRecord("/incidents",{...incidentForm,latitude:Number(incidentForm.latitude),longitude:Number(incidentForm.longitude)},"Incident",()=>setIncidentForm({title:"",description:"",category:"landslide",latitude:"13.3161",longitude:"75.772",reporter_name:session.name}));}}><h3><FileText size={18}/> Incident details</h3>{field("Short title",incidentForm.title,v=>setIncidentForm(o=>({...o,title:v})),{required:true,placeholder:"e.g. Rockfall near road"})}<label className="field"><span>Hazard type</span><select value={incidentForm.category} onChange={e=>setIncidentForm(o=>({...o,category:e.target.value}))}><option value="landslide">Landslide</option><option value="rockfall">Rockfall</option><option value="road_block">Road blockage</option><option value="flooding">Flooding</option><option value="fallen_tree">Fallen tree</option><option value="damage">Structural damage</option><option value="other">Other</option></select></label><label className="field"><span>Description</span><textarea rows="3" value={incidentForm.description} onChange={e=>setIncidentForm(o=>({...o,description:e.target.value}))} placeholder="Describe what you observed…"/></label>{coords(incidentForm,setIncidentForm)}<div className="form-actions"><button type="button" className="btn btn-secondary" onClick={()=>captureBrowserLocation(v=>setIncidentForm(o=>({...o,latitude:v})),v=>setIncidentForm(o=>({...o,longitude:v}))) }><MapPin size={15}/> Capture location</button>{submitButton("Submit report")}</div></form></section><section className="surface-card"><h3><MapIcon size={18}/> Recent reports</h3>{recordList(incidents.slice(0,5),"incidents")}</section></div></>;}
   function SosWorkspace(){const citizen=role==="citizen";return <><SectionHead eyebrow="EMERGENCY RESPONSE" title={citizen?"Request assistance":"SOS response queue"} description={citizen?"Submit a project demonstration request. This does not contact emergency services.":"Review incoming requests and update response progress."}/><div className="split-layout"><section className="surface-card"><form onSubmit={e=>{e.preventDefault();submitRecord("/sos",{...sosForm,latitude:Number(sosForm.latitude),longitude:Number(sosForm.longitude)},"SOS request",()=>setSosForm({message:"Emergency assistance requested",latitude:"13.3161",longitude:"75.772",contact_name:session.name,contact_phone:""}));}}><h3><Siren size={18}/> SOS request</h3><label className="field"><span>Message</span><textarea rows="3" required value={sosForm.message} onChange={e=>setSosForm(o=>({...o,message:e.target.value}))}/></label>{coords(sosForm,setSosForm)}{field("Contact name",sosForm.contact_name,v=>setSosForm(o=>({...o,contact_name:v})),{required:true})}{field("Contact phone (optional)",sosForm.contact_phone,v=>setSosForm(o=>({...o,contact_phone:v})))}<div className="form-actions"><button type="button" className="btn btn-secondary" onClick={()=>captureBrowserLocation(v=>setSosForm(o=>({...o,latitude:v})),v=>setSosForm(o=>({...o,longitude:v})))}><MapPin size={15}/> Capture location</button>{submitButton("Submit SOS request")}</div><p className="helper-text danger-text">Prototype only: no dispatch, SMS, or emergency service is contacted.</p></form></section><section className="surface-card"><h3><RadioTower size={18}/> {citizen?"Your requests":"SOS operations"}</h3>{recordList(sosItems,"sos")}</section></div></>;}
-  function AlertsWorkspace(){return <><SectionHead eyebrow="ALERT CENTRE" title={role==="rescue"||role==="admin"?"Publish an alert":"Emergency alerts"} description="Alerts stored by the Slidronix backend. Push notifications are not configured in this prototype."/><div className="split-layout">{(role==="rescue"||role==="admin")&&<section className="surface-card"><form onSubmit={e=>{e.preventDefault();submitRecord("/alerts",{...alertForm,latitude:alertForm.latitude===""?null:Number(alertForm.latitude),longitude:alertForm.longitude===""?null:Number(alertForm.longitude)},"Alert",()=>setAlertForm({title:"",message:"",risk_level:"High",latitude:"13.3161",longitude:"75.772"}));}}><h3><Bell size={18}/> Create alert</h3>{field("Alert title",alertForm.title,v=>setAlertForm(o=>({...o,title:v})),{required:true})}<label className="field"><span>Message</span><textarea rows="3" value={alertForm.message} onChange={e=>setAlertForm(o=>({...o,message:e.target.value}))} required/></label><label className="field"><span>Risk level</span><select value={alertForm.risk_level} onChange={e=>setAlertForm(o=>({...o,risk_level:e.target.value}))}><option>Low</option><option>Moderate</option><option>High</option><option>Critical</option></select></label>{coords(alertForm,setAlertForm)}{submitButton("Publish alert")}</form></section>}<section className="surface-card"><h3><Bell size={18}/> Saved alerts</h3>{alerts.length?recordList(alerts,"alerts"):<div className="empty-state"><Bell size={24}/><strong>No alerts published</strong><span>Published alerts will appear here.</span></div>}</section></div></>;}
+  function AlertsWorkspace(){return <><SectionHead eyebrow="ALERT CENTRE" title={role==="rescue"||role==="admin"?"Publish an alert":"Emergency alerts"} description="High and Critical warnings are checked every 15 seconds while this dashboard is open."/><section className="surface-card" style={{marginBottom:16}}><div className="record-head"><div><h3><Bell size={18}/> Mobile warning notifications</h3><p className="muted">Allow notifications on this device to receive newly published High or Critical alerts while Slidronix is open. This is a demo simulation, not an official emergency warning service.</p></div><button className="btn btn-primary" type="button" onClick={enableBrowserNotifications} disabled={notificationPermission==="granted"||notificationPermission==="unsupported"}>{notificationPermission==="granted"?"Notifications enabled":notificationPermission==="denied"?"Permission blocked":notificationPermission==="unsupported"?"Not supported":"Enable notifications"}</button></div>{notificationPermission==="denied"&&<p className="helper-text danger-text">Notifications are blocked by your browser. Allow them in site settings, then reload this page.</p>}{notificationPermission==="unsupported"&&<p className="helper-text">This browser does not expose the Notification API.</p>}</section><div className="split-layout">{(role==="rescue"||role==="admin")&&<section className="surface-card"><form onSubmit={e=>{e.preventDefault();submitRecord("/alerts",{...alertForm,latitude:alertForm.latitude===""?null:Number(alertForm.latitude),longitude:alertForm.longitude===""?null:Number(alertForm.longitude)},"Alert",()=>setAlertForm({title:"",message:"",risk_level:"High",latitude:"13.3161",longitude:"75.772"}));}}><h3><Bell size={18}/> Create alert</h3>{field("Alert title",alertForm.title,v=>setAlertForm(o=>({...o,title:v})),{required:true})}<label className="field"><span>Message</span><textarea rows="3" value={alertForm.message} onChange={e=>setAlertForm(o=>({...o,message:e.target.value}))} required/></label><label className="field"><span>Risk level</span><select value={alertForm.risk_level} onChange={e=>setAlertForm(o=>({...o,risk_level:e.target.value}))}><option>Low</option><option>Moderate</option><option>High</option><option>Critical</option></select></label>{coords(alertForm,setAlertForm)}{submitButton("Publish alert")}</form></section>}<section className="surface-card"><h3><Bell size={18}/> Saved alerts</h3>{alerts.length?recordList(alerts,"alerts"):<div className="empty-state"><Bell size={24}/><strong>No alerts published</strong><span>Published alerts will appear here.</span></div>}</section></div></>;}
   function Overview(){return <><div className="welcome-row"><div><div className="eyebrow">SLIDRONIX / {ROLE_LABELS[role].toUpperCase()}</div><h2>{role==="citizen"?"Your landslide safety overview":role==="rescue"?"Emergency operations":role==="researcher"?"Research workspace":"System administration"}</h2><p>{role==="citizen"?"Understand local risk and take informed next steps.":role==="rescue"?"Monitor reported hazards and coordinate response status.":role==="researcher"?"Inspect the current modelled risk surface and research assets.":"Review operational records and platform data."}</p></div><button className="btn btn-secondary" onClick={()=>{refreshOperations();setNotice("Refreshing operational records…");}}><RefreshCw size={15}/> Refresh</button></div>
     {alerts.length>0&&role!=="researcher"&&<div className="alert-banner"><span className="alert-icon"><ShieldAlert size={19}/></span><div><strong>{alerts.length} saved alert{alerts.length===1?"":"s"}</strong><span>Review the latest alert messages in the alert centre.</span></div><button className="text-button" onClick={()=>navTo("alerts")}>View alerts <ChevronDown size={15}/></button></div>}
     <div className="stats-grid">{role==="citizen"?<><Stat label="Mapped locations" value={fmt(counts.total)} sub="Prepared risk points" icon={MapIcon}/><Stat label="High-risk locations" value={fmt(counts.high)} sub="Requires additional awareness" icon={AlertTriangle} tone="orange"/><Stat label="Open reports" value={fmt(counts.activeIncidents)} sub="Not yet resolved" icon={FileText} tone="purple"/><Stat label="SOS requests" value={fmt(counts.openSos)} sub="Unresolved demo requests" icon={Siren} tone="red"/></>:role==="rescue"?<><Stat label="Open incidents" value={fmt(counts.activeIncidents)} sub="Needs review or response" icon={AlertTriangle} tone="orange"/><Stat label="Open SOS" value={fmt(counts.openSos)} sub="Pending resolution" icon={Siren} tone="red"/><Stat label="Active alerts" value={fmt(counts.activeAlerts)} sub="Stored alert records" icon={Bell} tone="purple"/><Stat label="Mapped risk points" value={fmt(counts.total)} sub="Modelled locations" icon={MapIcon}/></>:role==="researcher"?<><Stat label="Prediction points" value={fmt(counts.total)} sub="Available risk surface" icon={MapIcon}/><Stat label="Low risk" value={fmt(counts.low)} sub={`${counts.total?((counts.low/counts.total)*100).toFixed(1):0}% of locations`} icon={CheckCircle2} tone="green"/><Stat label="Moderate risk" value={fmt(counts.moderate)} sub={`${counts.total?((counts.moderate/counts.total)*100).toFixed(1):0}% of locations`} icon={Activity} tone="orange"/><Stat label="High risk" value={fmt(counts.high)} sub={`${counts.total?((counts.high/counts.total)*100).toFixed(1):0}% of locations`} icon={AlertTriangle} tone="red"/></>:<><Stat label="Risk locations" value={fmt(counts.total)} sub="Prediction dataset" icon={MapIcon}/><Stat label="Open incidents" value={fmt(counts.activeIncidents)} sub="Operational queue" icon={FileText} tone="orange"/><Stat label="Unresolved SOS" value={fmt(counts.openSos)} sub="Response queue" icon={Siren} tone="red"/><Stat label="Saved alerts" value={fmt(counts.activeAlerts)} sub="Alert records" icon={Bell} tone="purple"/></>}</div>
