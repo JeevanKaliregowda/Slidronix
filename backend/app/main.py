@@ -39,7 +39,7 @@ def health():
 
 
 from app.predictions import router as predictions_router
-from app.live_inference import router as live_inference_router
+from app.lazy_live_inference import router as live_inference_router
 from app.incidents import router as incidents_router
 from app.auth import router as auth_router
 
